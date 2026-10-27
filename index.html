@@ -3,16 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scroll to Build a Sandwich</title>
+  <title>Mumbai Fast Food Cafe | Fresh Sandwich</title>
   <style>
-    body {
+    * {
       margin: 0;
-      overflow-x: hidden;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #2a2a2a;
-      color: white;
+      padding: 0;
+      box-sizing: border-box;
     }
-    /* Fixed canvas that covers the viewport */
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #ffffff;
+      color: #2d2d2d;
+      overflow-x: hidden;
+    }
+
+    /* ---------- Scroll Progress Bar ---------- */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.08);
+      z-index: 100;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #ff8a3d, #e63946);
+      transition: width 0.1s ease;
+    }
+
+    /* ---------- Canvas (Fixed Background) ---------- */
     #canvas-container {
       position: fixed;
       top: 0;
@@ -20,62 +44,308 @@
       width: 100vw;
       height: 100vh;
       z-index: 1;
-      pointer-events: none; /* Allow scrolling through the canvas */
+      pointer-events: none;
     }
-    /* Scrollable content with invisible triggers */
+
+    /* ---------- Scrollable Content ---------- */
     .scroll-content {
       position: relative;
       z-index: 2;
-      pointer-events: none; /* Let scroll events pass to window */
-      height: 500vh; /* enough scroll distance for all animations */
-    }
-    /* Text overlay for instructions */
-    .instructions {
-      position: fixed;
-      bottom: 30px;
-      left: 30px;
-      z-index: 3;
-      background: rgba(0,0,0,0.6);
-      padding: 15px 25px;
-      border-radius: 40px;
-      backdrop-filter: blur(5px);
-      border: 1px solid rgba(255,255,255,0.2);
-      font-weight: 300;
-      letter-spacing: 1px;
       pointer-events: none;
+      height: 600vh;
     }
-    .instructions span {
-      color: #ffb347;
-      font-weight: 600;
-    }
-    .progress-container {
+
+    /* ---------- Header ---------- */
+    .header {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.1);
-      z-index: 4;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0));
     }
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #ffb347, #ff6b6b);
-      transition: width 0.1s;
+
+    .logo {
+      font-size: 24px;
+      font-weight: 800;
+      color: #e63946;
+      letter-spacing: -0.5px;
+      pointer-events: auto;
+    }
+
+    .logo span {
+      color: #ff8a3d;
+    }
+
+    .header-right {
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      pointer-events: auto;
+      background: rgba(255,255,255,0.8);
+      padding: 8px 18px;
+      border-radius: 30px;
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* ---------- Hero Text ---------- */
+    .hero-text {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      font-weight: 800;
+      color: #1a1a1a;
+      line-height: 1.1;
+      margin-bottom: 12px;
+      text-shadow: 0 4px 30px rgba(255,255,255,0.8);
+    }
+
+    .hero-text h1 span {
+      color: #e63946;
+    }
+
+    .hero-text p {
+      font-size: clamp(0.95rem, 2vw, 1.25rem);
+      color: #555;
+      font-weight: 400;
+      max-width: 550px;
+      margin: 0 auto;
+      text-shadow: 0 2px 20px rgba(255,255,255,0.9);
+    }
+
+    /* ---------- Scroll Hint ---------- */
+    .scroll-hint {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #888;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      animation: bounce 2s infinite;
+    }
+
+    .scroll-hint svg {
+      width: 22px;
+      height: 22px;
+      stroke: #888;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ---------- Menu / Info Sections (Appear After Scroll) ---------- */
+    .info-section {
+      position: fixed;
+      bottom: 40px;
+      left: 0;
+      width: 100%;
+      padding: 0 40px;
+      z-index: 4;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+      opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      transform: translateY(20px);
+    }
+
+    .info-section.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .info-card {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 20px;
+      padding: 20px 28px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+      min-width: 160px;
+      transition: transform 0.2s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .info-card .icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .info-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+    }
+
+    .info-card p {
+      font-size: 12px;
+      color: #888;
+      font-weight: 400;
+    }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 14px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 45;
+      pointer-events: none;
+      font-size: 12px;
+      color: #aaa;
+      background: linear-gradient(to top, rgba(255,255,255,0.9), rgba(255,255,255,0));
+    }
+
+    .footer span {
+      pointer-events: auto;
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 768px) {
+      .header {
+        padding: 14px 20px;
+      }
+      .logo {
+        font-size: 20px;
+      }
+      .header-right {
+        font-size: 12px;
+        padding: 6px 14px;
+      }
+      .info-section {
+        bottom: 30px;
+        gap: 12px;
+        padding: 0 16px;
+      }
+      .info-card {
+        padding: 14px 18px;
+        min-width: 120px;
+        border-radius: 14px;
+      }
+      .info-card .icon {
+        font-size: 22px;
+      }
+      .info-card h3 {
+        font-size: 12px;
+      }
+      .info-card p {
+        font-size: 10px;
+      }
+      .footer {
+        padding: 10px 16px;
+        font-size: 10px;
+      }
+    }
+
+    /* Hide hero text when scrolled past a point */
+    .hero-text.hidden {
+      opacity: 0;
     }
   </style>
 </head>
 <body>
+
+  <!-- Progress Bar -->
   <div class="progress-container">
     <div class="progress-bar" id="progressBar"></div>
   </div>
+
+  <!-- 3D Canvas -->
   <div id="canvas-container"></div>
-  <div class="instructions">
-    🍞 Scroll to build your sandwich <span>→</span>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">Mumbai<span>Bites</span> 🍔</div>
+    <div class="header-right">📍 Bandra West, Mumbai</div>
+  </header>
+
+  <!-- Hero Text -->
+  <div class="hero-text" id="heroText">
+    <h1>Build Your <span>Perfect</span><br>Sandwich</h1>
+    <p>Scroll down to stack fresh ingredients — just like our chefs do at MumbaiBites.</p>
   </div>
+
+  <!-- Scroll Hint -->
+  <div class="scroll-hint" id="scrollHint">
+    <span>SCROLL</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 13l5 5 5-5" />
+      <path d="M7 6l5 5 5-5" />
+    </svg>
+  </div>
+
+  <!-- Info Cards (Appear after scroll) -->
+  <div class="info-section" id="infoSection">
+    <div class="info-card">
+      <div class="icon">🥪</div>
+      <h3>Fresh Daily</h3>
+      <p>Baked in-house</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">🌿</div>
+      <h3>Veg & Non-Veg</h3>
+      <p>Your choice</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">⚡</div>
+      <h3>Quick Bites</h3>
+      <p>Under 5 mins</p>
+    </div>
+    <div class="info-card">
+      <div class="icon">💰</div>
+      <h3>Starting ₹99</h3>
+      <p>Student combos</p>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>© 2025 MumbaiBites Cafe</span>
+    <span>Open 8am – 11pm · Bandra West</span>
+  </footer>
+
+  <!-- Scrollable area -->
   <div class="scroll-content"></div>
 
-  <!-- Import Three.js and GLTFLoader -->
+  <!-- Three.js -->
   <script type="importmap">
     {
       "imports": {
@@ -88,42 +358,37 @@
   <script type="module">
     import * as THREE from 'three';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    // --- Setup Scene, Camera, Renderer ---
+    // ---------------------------------------------------------------
+    // 1. SCENE SETUP (White background, no platform)
+    // ---------------------------------------------------------------
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a1a1a); // dark gray
-    
-    // Add subtle fog for depth
-    scene.fog = new THREE.FogExp2(0x1a1a1a, 0.015);
+    scene.background = new THREE.Color(0xffffff); // clean white
 
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(5, 4, 8);
-    camera.lookAt(0, 1, 0);
+    camera.position.set(4, 3.5, 7);
+    camera.lookAt(0, 0.8, 0);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.shadowMap.bias = 0.0001;
     document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    // --- Controls (disabled but just for reference, no interaction needed) ---
-    // We'll manually control camera through scroll
-
-    // --- Lighting ---
-    // Ambient base
-    const ambientLight = new THREE.AmbientLight(0x404060);
+    // ---------------------------------------------------------------
+    // 2. LIGHTING (Soft, bright, cafe-like)
+    // ---------------------------------------------------------------
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
-    // Main directional light (simulating overhead kitchen light)
-    const mainLight = new THREE.DirectionalLight(0xffeedd, 1.2);
-    mainLight.position.set(5, 10, 7);
+    const mainLight = new THREE.DirectionalLight(0xfff5e6, 1.0);
+    mainLight.position.set(5, 8, 6);
     mainLight.castShadow = true;
     mainLight.receiveShadow = true;
     mainLight.shadow.mapSize.width = 1024;
     mainLight.shadow.mapSize.height = 1024;
-    const d = 10;
+    const d = 8;
     mainLight.shadow.camera.left = -d;
     mainLight.shadow.camera.right = d;
     mainLight.shadow.camera.top = d;
@@ -133,70 +398,33 @@
     mainLight.shadow.bias = -0.0005;
     scene.add(mainLight);
 
-    // Fill light from the right
-    const fillLight = new THREE.PointLight(0xffaa88, 0.8);
-    fillLight.position.set(-3, 4, 5);
+    const fillLight = new THREE.PointLight(0xffe0b2, 0.5);
+    fillLight.position.set(-3, 4, 4);
     scene.add(fillLight);
 
-    // Back light for rim effect
-    const backLight = new THREE.PointLight(0x4466cc, 0.5);
-    backLight.position.set(2, 3, -5);
-    scene.add(backLight);
+    const rimLight = new THREE.PointLight(0xb2d8ff, 0.4);
+    rimLight.position.set(2, 3, -5);
+    scene.add(rimLight);
 
-    // --- Kitchen Platform (the counter) ---
-    const platformGeo = new THREE.BoxGeometry(8, 0.5, 6);
-    const platformMat = new THREE.MeshStandardMaterial({ 
-      color: 0x8b5a2b, 
-      roughness: 0.7,
-      metalness: 0.1
-    });
-    const platform = new THREE.Mesh(platformGeo, platformMat);
-    platform.position.set(0, -0.25, 0);
-    platform.receiveShadow = true;
-    platform.castShadow = true;
-    scene.add(platform);
-
-    // Add a subtle grid texture to the platform (like a cutting board)
-    const gridHelper = new THREE.GridHelper(8, 20, 0xaa8866, 0xaa8866);
-    gridHelper.position.y = 0.01; // slightly above platform
-    scene.add(gridHelper);
-
-    // Add a wooden texture look via lines? Not needed, just aesthetic.
-
-    // Add a subtle back wall or just keep dark background.
-
-    // --- Placeholder for ingredients ---
-    // Each ingredient will have a "targetY" and a "startX" offset
-    // We'll animate their position based on scroll progress.
-    
+    // ---------------------------------------------------------------
+    // 3. INGREDIENTS ARRAY (no platform)
+    // ---------------------------------------------------------------
     const ingredients = [];
-    let totalScrollHeight = 500; // vh, will calculate later
+    let scrollProgress = 0;
 
-    // Map of models to load, with their target Y positions and rotation if needed
-    // Order: bottom bread, tomato, cheese, cucumber, top bread (double bread)
-    // We'll load: bread (used twice), tomato, cheese, cucumber
-    // For the second bread, we can reuse the same model but clone it.
-    
-    // We'll store references to animate.
+    // ---------------------------------------------------------------
+    // 4. LOAD MODELS
+    // ---------------------------------------------------------------
     const loader = new GLTFLoader();
-    
-    // Function to load model with promise
+
     function loadModel(url) {
       return new Promise((resolve, reject) => {
-        loader.load(url, 
-          (gltf) => resolve(gltf.scene),
-          undefined,
-          (error) => reject(error)
-        );
+        loader.load(url, (gltf) => resolve(gltf.scene), undefined, reject);
       });
     }
 
-    // Async load all assets
     async function loadAssets() {
       try {
-        // Since filenames include spaces or capital? Based on prompt: tomato.glb, chees.glb, cucumber.glb, Bread.glb
-        // In github repo they might be exact, but we'll try with correct casing.
-        // Note: "chees.glb" might be a typo for cheese, but we follow the prompt.
         const [tomatoModel, cheeseModel, cucumberModel, breadModel] = await Promise.all([
           loadModel('tomato.glb'),
           loadModel('chees.glb'),
@@ -204,179 +432,134 @@
           loadModel('Bread.glb')
         ]);
 
-        // Configure models (scale, rotation, shadows)
-        // Adjust based on typical sizes; we'll scale to fit.
-        // We need to inspect model dimensions? We'll just apply a uniform scale and tweak.
-        // Bread might be large, tomato small etc. We'll set reasonable defaults.
-        
-        // Helper to prepare a mesh
-        function prepareMesh(obj, scale = 1, rotationY = 0, castShadow = true) {
+        // Helper: prepare mesh (shadow, scale)
+        function prepareMesh(obj, scale, rotY = 0) {
           obj.scale.set(scale, scale, scale);
-          obj.rotation.y = rotationY;
+          obj.rotation.y = rotY;
           obj.traverse((node) => {
             if (node.isMesh) {
-              node.castShadow = castShadow;
+              node.castShadow = true;
               node.receiveShadow = true;
             }
           });
           return obj;
         }
 
-        // Bread scale (to be about 2 units wide)
-        const breadScale = 1.0; // adjust after seeing model, we'll use 1.2 to make it look good
-        // But models could be different sizes; we'll set a base and then maybe adjust.
-        // For safety, we'll scale based on bounding box? Complex. Let's use fixed scales.
-        // Since we don't know, we'll set moderate scales and adjust positions.
-        // Ideally we'd compute, but for demo we assume bread ~ 2 units, others ~1 unit.
-        
-        // For simplicity, we'll apply scale factors.
-        
-        // Clone bread for bottom and top
-        const bottomBread = breadModel.clone();
-        prepareMesh(bottomBread, 1.2, 0);
-        bottomBread.position.set(0, 0.2, 0); // will be overridden by animation start
-        
-        const topBread = breadModel.clone();
-        prepareMesh(topBread, 1.2, 0);
-        topBread.position.set(0, 0.2, 0);
-        
-        // Tomato
-        const tomato = tomatoModel.clone();
-        prepareMesh(tomato, 1.0, 0);
-        tomato.position.set(0, 0.5, 0);
-        
-        // Cheese (chees.glb)
-        const cheese = cheeseModel.clone();
-        prepareMesh(cheese, 1.0, 0);
-        cheese.position.set(0, 0.7, 0);
-        
-        // Cucumber
-        const cucumber = cucumberModel.clone();
-        prepareMesh(cucumber, 1.0, 0);
-        cucumber.position.set(0, 0.9, 0);
-        
-        // Now we need to set their initial positions to be off-screen to the right.
-        // We'll set their final target positions (where they should be after scroll).
-        // We'll store them with metadata.
-        
-        // Define final positions (Y offsets for stacking)
-        // Platform top is at y = 0 (since platform is at y=-0.25 with height 0.5, top is y=0)
-        // We'll stack:
-        // bottomBread: y = 0.2 (center of bread, but bread might be thick)
-        // tomato: y = 0.45
-        // cheese: y = 0.65
-        // cucumber: y = 0.85
-        // topBread: y = 1.1
-        
-        // But we need to consider model heights. We'll adjust visually.
-        // For demonstration, these Y values are fine, but we might need to tweak.
-        // Actually let's set them more precisely based on bread thickness ~0.2, tomato ~0.1, etc.
-        // But we don't know the actual model heights. We'll set Y positions relative and then adjust if needed.
-        // I'll set them and then maybe add a small offset.
-        
-        // To be safe, we can compute bounding boxes after loading, but that's complex.
-        // Given the time, I'll use these approximate values.
-        
-        // Store each ingredient with its target Y and start X offset (to come from right)
-        // We'll animate X from +10 to 0, and also Y from a bit higher/lower? Actually just X.
-        // Also we might want them to rotate slightly during motion.
-        
-        // We'll also give each a different "arrival" scroll progress (0-1)
-        // The total scroll progress is 0 to 1.
-        // We have 5 items (bottomBread, tomato, cheese, cucumber, topBread)
-        // We'll assign thresholds: 0.1, 0.3, 0.5, 0.7, 0.9 for final position.
-        // They will move from right (X=10) to center (X=0) as scroll goes from threshold-0.2 to threshold.
-        // Actually let's use a smooth approach: each item has a startProgress and endProgress.
-        
-        // Let's define items with metadata
+        // Clone bread for bottom & top
+        const bottomBread = prepareMesh(breadModel.clone(), 1.2);
+        const topBread = prepareMesh(breadModel.clone(), 1.2);
+
+        const tomato = prepareMesh(tomatoModel.clone(), 1.0, 0.2);
+        const cheese = prepareMesh(cheeseModel.clone(), 1.0, -0.1);
+        const cucumber = prepareMesh(cucumberModel.clone(), 1.0, 0.3);
+
+        // Define stacking order & scroll thresholds
+        // No platform, so Y values start at 0 (ground)
+        // Final Y positions (stacked)
         const items = [
-          { obj: bottomBread, finalY: 0.2, startProg: 0.0, endProg: 0.25, rotY: 0 },
-          { obj: tomato, finalY: 0.4, startProg: 0.2, endProg: 0.45, rotY: 0.2 },
-          { obj: cheese, finalY: 0.55, startProg: 0.4, endProg: 0.65, rotY: -0.1 },
-          { obj: cucumber, finalY: 0.7, startProg: 0.6, endProg: 0.85, rotY: 0.3 },
-          { obj: topBread, finalY: 1.0, startProg: 0.8, endProg: 1.0, rotY: 0 }
+          { obj: bottomBread, finalY: 0.15, startProg: 0.00, endProg: 0.20, rotY: 0.0 },
+          { obj: tomato,      finalY: 0.35, startProg: 0.15, endProg: 0.38, rotY: 0.2 },
+          { obj: cheese,      finalY: 0.48, startProg: 0.33, endProg: 0.56, rotY: -0.1 },
+          { obj: cucumber,    finalY: 0.62, startProg: 0.51, endProg: 0.74, rotY: 0.3 },
+          { obj: topBread,    finalY: 0.90, startProg: 0.70, endProg: 1.00, rotY: 0.0 }
         ];
-        
-        // Set initial positions: X=10 (off right), Y=finalY, Z=0
-        items.forEach(item => {
-          item.obj.position.set(10, item.finalY, 0);
+
+        // Set initial positions: off-screen to the right (x = 12)
+        items.forEach((item) => {
+          item.obj.position.set(12, item.finalY, 0);
           item.obj.rotation.y = item.rotY;
           scene.add(item.obj);
         });
-        
-        // Store items globally for animation
+
         ingredients.push(...items);
-        
-        // Add some environment props? Maybe a knife or cutting board? Optional.
-        // Add a simple background sphere or gradient? Not needed.
-        
-        // Start animation loop
+
+        // Start render loop
         animate();
-        
-      } catch (error) {
-        console.error('Error loading models:', error);
-        // Fallback: create simple colored boxes if models fail to load (for demonstration)
-        // This ensures the page still works if models are missing.
+
+      } catch (err) {
+        console.error('Model loading error:', err);
+        // Fallback: simple colored boxes if models fail
         createFallbackIngredients();
       }
     }
-    
-    // Fallback function in case models can't be loaded (e.g., file paths wrong)
+
+    // ---------------------------------------------------------------
+    // 5. FALLBACK (if GLB files not found)
+    // ---------------------------------------------------------------
     function createFallbackIngredients() {
-      console.warn('Using fallback geometry because models failed to load.');
-      const breadMat = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
-      const tomatoMat = new THREE.MeshStandardMaterial({ color: 0xff4d4d });
+      const breadMat  = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
+      const tomatoMat = new THREE.MeshStandardMaterial({ color: 0xe63946 });
       const cheeseMat = new THREE.MeshStandardMaterial({ color: 0xffd966 });
       const cucumberMat = new THREE.MeshStandardMaterial({ color: 0x6b8e23 });
-      
-      function createBox(w, h, d, colorMat, y) {
+
+      function box(w, h, d, mat, y) {
         const geo = new THREE.BoxGeometry(w, h, d);
-        const mesh = new THREE.Mesh(geo, colorMat);
+        const mesh = new THREE.Mesh(geo, mat);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        mesh.position.set(10, y, 0);
+        mesh.position.set(12, y, 0);
         return mesh;
       }
-      
-      const bottomBread = createBox(2, 0.2, 1.2, breadMat, 0.2);
-      const tomato = createBox(1.6, 0.1, 1.0, tomatoMat, 0.4);
-      const cheese = createBox(1.7, 0.05, 1.1, cheeseMat, 0.55);
-      const cucumber = createBox(1.5, 0.1, 0.9, cucumberMat, 0.7);
-      const topBread = createBox(2, 0.2, 1.2, breadMat, 1.0);
-      
+
+      const bottomBread = box(2.0, 0.20, 1.2, breadMat, 0.15);
+      const tomato      = box(1.6, 0.10, 1.0, tomatoMat, 0.35);
+      const cheese      = box(1.7, 0.05, 1.1, cheeseMat, 0.48);
+      const cucumber    = box(1.5, 0.10, 0.9, cucumberMat, 0.62);
+      const topBread    = box(2.0, 0.20, 1.2, breadMat, 0.90);
+
       const items = [
-        { obj: bottomBread, finalY: 0.2, startProg: 0.0, endProg: 0.25, rotY: 0 },
-        { obj: tomato, finalY: 0.4, startProg: 0.2, endProg: 0.45, rotY: 0.2 },
-        { obj: cheese, finalY: 0.55, startProg: 0.4, endProg: 0.65, rotY: -0.1 },
-        { obj: cucumber, finalY: 0.7, startProg: 0.6, endProg: 0.85, rotY: 0.3 },
-        { obj: topBread, finalY: 1.0, startProg: 0.8, endProg: 1.0, rotY: 0 }
+        { obj: bottomBread, finalY: 0.15, startProg: 0.00, endProg: 0.20, rotY: 0.0 },
+        { obj: tomato,      finalY: 0.35, startProg: 0.15, endProg: 0.38, rotY: 0.2 },
+        { obj: cheese,      finalY: 0.48, startProg: 0.33, endProg: 0.56, rotY: -0.1 },
+        { obj: cucumber,    finalY: 0.62, startProg: 0.51, endProg: 0.74, rotY: 0.3 },
+        { obj: topBread,    finalY: 0.90, startProg: 0.70, endProg: 1.00, rotY: 0.0 }
       ];
-      
-      items.forEach(item => {
-        item.obj.position.set(10, item.finalY, 0);
+
+      items.forEach((item) => {
+        item.obj.position.set(12, item.finalY, 0);
         item.obj.rotation.y = item.rotY;
         scene.add(item.obj);
       });
-      
+
       ingredients.push(...items);
       animate();
     }
 
-    // --- Scroll handling ---
-    let scrollProgress = 0; // 0 to 1
+    // ---------------------------------------------------------------
+    // 6. SCROLL HANDLING & ANIMATION
+    // ---------------------------------------------------------------
+    const progressBar = document.getElementById('progressBar');
+    const heroText = document.getElementById('heroText');
+    const scrollHint = document.getElementById('scrollHint');
+    const infoSection = document.getElementById('infoSection');
 
     function updateScrollProgress() {
       const scrollY = window.scrollY;
       const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
       scrollProgress = maxScroll > 0 ? Math.min(scrollY / maxScroll, 1) : 0;
-      
-      // Update progress bar
-      document.getElementById('progressBar').style.width = (scrollProgress * 100) + '%';
-      
-      // Update each ingredient position
-      ingredients.forEach(item => {
-        // Determine how far along this item is in its animation
-        // Map scrollProgress to item's personal progress
+
+      // Progress bar
+      progressBar.style.width = (scrollProgress * 100) + '%';
+
+      // Fade out hero text after 15% scroll
+      if (scrollProgress > 0.12) {
+        heroText.classList.add('hidden');
+      } else {
+        heroText.classList.remove('hidden');
+      }
+
+      // Hide scroll hint after 10% scroll
+      scrollHint.style.opacity = scrollProgress > 0.08 ? '0' : '1';
+
+      // Show info cards after 85% scroll (sandwich almost complete)
+      if (scrollProgress > 0.82) {
+        infoSection.classList.add('visible');
+      } else {
+        infoSection.classList.remove('visible');
+      }
+
+      // Animate each ingredient
+      ingredients.forEach((item) => {
         let t = 0;
         if (scrollProgress <= item.startProg) {
           t = 0;
@@ -385,59 +568,55 @@
         } else {
           t = (scrollProgress - item.startProg) / (item.endProg - item.startProg);
         }
-        
-        // Easing function for smoother motion (easeOutCubic)
+
+        // Ease-out cubic
         const eased = 1 - Math.pow(1 - t, 3);
-        
-        // Interpolate X from 10 to 0
-        const x = 10 * (1 - eased);
-        // Also add a little Y arc? Slight vertical movement for visual interest
-        const yArc = Math.sin(eased * Math.PI) * 0.2;
+
+        // X: from 12 → 0
+        const x = 12 * (1 - eased);
+        // Slight arc in Y for natural drop
+        const yArc = Math.sin(eased * Math.PI) * 0.25;
         const y = item.finalY + yArc;
-        
-        // Apply rotation: slight spin during movement? We'll add a bit
-        const spin = (1 - eased) * 0.5; // extra rotation during travel
+
+        // Spin during travel
+        const spin = (1 - eased) * 0.6;
         item.obj.rotation.y = item.rotY + spin;
-        
+
         item.obj.position.x = x;
         item.obj.position.y = y;
       });
-      
-      // Slight camera movement based on scroll (optional)
-      // Move camera slightly to follow action
-      camera.position.x = 5 + scrollProgress * 2;
-      camera.position.z = 8 - scrollProgress * 3;
-      camera.lookAt(0, 0.8, 0);
+
+      // Camera: subtle movement for depth
+      camera.position.x = 4 + scrollProgress * 1.5;
+      camera.position.z = 7 - scrollProgress * 2.5;
+      camera.lookAt(0, 0.6 + scrollProgress * 0.2, 0);
     }
 
-    // --- Animation Loop ---
+    // ---------------------------------------------------------------
+    // 7. ANIMATION LOOP
+    // ---------------------------------------------------------------
     function animate() {
       requestAnimationFrame(animate);
-      
-      // Update positions based on scroll
       updateScrollProgress();
-      
       renderer.render(scene, camera);
     }
 
-    // Handle window resize
+    // ---------------------------------------------------------------
+    // 8. RESIZE HANDLER
+    // ---------------------------------------------------------------
     window.addEventListener('resize', () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Start loading assets
+    // ---------------------------------------------------------------
+    // 9. START
+    // ---------------------------------------------------------------
     loadAssets();
 
-    // Also set a timeout to use fallback if loading takes too long? Not necessary.
-
-    // Initial update to set positions
+    // Run once to set initial state
     updateScrollProgress();
-
-    // Add a simple ambient particle effect? Optional.
-    // Not needed.
-
   </script>
 </body>
 </html>
